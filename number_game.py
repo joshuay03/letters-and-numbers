@@ -229,7 +229,7 @@ def polish_str_2_expr_tree(pn_str):
     T
 
     '''
-    entirestr = []
+    T = []
     def find_match(i):
         '''
         Starting at position i where pn_str[i] == '['
@@ -237,14 +237,17 @@ def polish_str_2_expr_tree(pn_str):
         That is, pn_str[j] == ']' and the substring pn_str[i:j+1]
         is balanced
         '''
-        for i in len(pn_str):
-            for j in len(pn_str):
-                if pn_str[i][j] == ']':
-                    entirestr.append(pn_str[i:j+1])
+        stack = collections.deque()
+        if pn_str[i] == '[':
+            stack.append(i)
+            if pn_str[i] == ']':
+                stack.pop()
+
 
      # .................................................................  
-
     left_p = pn_str.find('[')
+   
+    return T
  
    
 # ----------------------------------------------------------------------------
@@ -320,16 +323,34 @@ def decompose(T, prefix = None):
     if prefix is None:
         prefix = []
 
+    def reclop(newlist):
+        for i in newlist:
+            if isinstance(i, list):
+                reclop(i) 
+            if isinstance(i, str):
+                Lop.append(i)
+        return Lop
+
+    def reclnum(newlist):
+        for i in newlist:
+            if isinstance(i, list):
+                reclnum(i) 
+            if isinstance(i, int):
+                Lnum.append(i)
+        return Lnum
+            
+    # T =  ['-', ['+', ['-', 75, ['-', 10, 3]], ['-', 100, 50]], 3]
     if isinstance(T, int):
-        Aop = []
-        Lop = [] 
+        Aop = op_address_list(T,prefix=None)
+        Lop = reclop(T) 
         Anum = [prefix]
-        Lnum = [T]
+        Lnum = reclnum(T)
+
         return Aop, Lop, Anum, Lnum
     
     assert isinstance(T, list)
     
-    raise NotImplementedError()
+
 
 
 # ----------------------------------------------------------------------------
