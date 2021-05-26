@@ -229,8 +229,7 @@ def polish_str_2_expr_tree(pn_str):
     T
 
     '''
-    # raise NotImplementedError()
-    
+    entirestr = []
     def find_match(i):
         '''
         Starting at position i where pn_str[i] == '['
@@ -238,12 +237,14 @@ def polish_str_2_expr_tree(pn_str):
         That is, pn_str[j] == ']' and the substring pn_str[i:j+1]
         is balanced
         '''
-        raise NotImplementedError()
+        for i in len(pn_str):
+            for j in len(pn_str):
+                if pn_str[i][j] == ']':
+                    entirestr.append(pn_str[i:j+1])
+
      # .................................................................  
 
     left_p = pn_str.find('[')
- 
-    raise NotImplementedError()
  
    
 # ----------------------------------------------------------------------------
@@ -556,3 +557,6 @@ def cross_over(P1, P2, Q):
     
     return C1, C2
 
+# polish_str_2_expr_tree("[+,[*,5,4],[-,100,[/,20,2]]]")
+a= "[-,9,8]"
+expr_tree_2_polish_str(a)
