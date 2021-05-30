@@ -474,7 +474,7 @@ def mutate_op(T):
     La = op_address_list(T)
     a = random.choice(La)  # random address of an op in T
     op_c = get_item(T, a)       # the char of the op
-    
+
     op_list = ["+", "-", "*"]
     op_list.remove(op_c)
 
@@ -583,7 +583,9 @@ def cross_over(P1, P2, Q):
     S1 = get_item(C1, aS1)
 
     # ABOUT 3 LINES DELETED
-    raise NotImplementedError()
+    d2 = len(Aop_2[i2])-1
+    aS2 = Aop_2[i2][:d2] # address of the subtree S2
+    S2 = get_item(C2, aS2)
 
     # print(' DEBUG -------- S1 and S2 ----------') # DEBUG
     # print(S1)
@@ -594,7 +596,7 @@ def cross_over(P1, P2, Q):
     counter_1 = collections.Counter(Lnum_2[a2:b2]+nums_C1mS1)
     
     # Test whether child C1 is ok
-    if all(counter_Q[v]>=counter_1[v]  for v in counter_Q):
+    if all(counter_Q[v]>=counter_1[v] for v in counter_Q):
         # candidate is fine!  :-)
         C1 = replace_subtree(C1, aS1, S2)
     else:
@@ -607,26 +609,18 @@ def cross_over(P1, P2, Q):
         
     # count the numbers (their occurences) in the candidate child C2
     counter_2 = collections.Counter(Lnum_1[a1:b1]+nums_C2mS2)
-    
-    # Test whether child C2 is ok
-    
+
     # ABOUT 10 LINES DELETED
-    raise NotImplementedError()
-    
-    
+    # Test whether child C2 is ok
+    if all(counter_Q[v]>=counter_2[v] for v in counter_Q):
+        # candidate is fine!  :-)
+        C2 = replace_subtree(C2, aS2, S1)
+    else:
+        available_nums = counter_Q.copy()
+        available_nums.subtract(
+            collections.Counter(nums_C2mS2)
+            )
+        R2, _ = bottom_up_creator(list(available_nums.elements()))
+        C2 = replace_subtree(C2, aS2, R2)
+
     return C1, C2
-
-
-T = ['-', ['+', ['-', 75, ['-', 10, 3]], ['-', 100, 50]], 3]
-
-# Test for num_address_list
-# print(T)
-# print(num_address_list(T))
-
-# Test for mutate_op
-print(T)
-print(mutate_op(T))
-
-# Test for decompose
-# print(T)
-# print(decompose(T))
