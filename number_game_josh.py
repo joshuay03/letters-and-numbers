@@ -288,6 +288,37 @@ def op_address_list(T, prefix = None):
     
     return L
 
+def num_address_list(T, prefix = None):
+    '''
+    Return the address list L of the internal nodes of the expresssion tree T
+    
+    If T is a scalar, then L = []
+
+    Note that the function 'decompose' is more general.
+
+    Parameters
+    ----------
+    T : expression tree
+    prefix: prefix to prepend to the addresses returned in L
+
+    Returns
+    -------
+    L
+    '''
+    if isinstance(T, int):
+        return []
+    
+    if prefix is None:
+        prefix = []
+        
+    L = [prefix.copy()+[1]] # first adddress is the op of the root of T
+    left_al = num_address_list(T[1], prefix.copy()+[1])
+    L.extend(left_al)
+    right_al = num_address_list(T[2], prefix.copy()+[2])
+    L.extend(right_al)
+    
+    return L
+
 
 # ----------------------------------------------------------------------------
 
@@ -338,8 +369,44 @@ def decompose(T, prefix = None):
     assert isinstance(T, list)
 
     Aop = op_address_list(T)
+    Lop = [get_item(T, x) for x in Aop]
 
-    return Aop
+    def rec(T, prefix = None):
+        if isinstance(T, str):
+            return []
+    
+        if prefix is None:
+            prefix = []
+        
+        Anum = [prefix.copy()+[0]] # first adddress is the op of the root of T
+        Anum = rec(T[1], prefix.copy()+[1])
+        Anum.extend(left_al)
+        right_al = rec(T[2], prefix.copy()+[2])
+        Anum.extend(right_al)
+    
+        return Anum
+
+        # if isinstance(T[1], list):
+        #     cur.append(1)
+        #     Anum.append([])
+        #     rec(T[1])
+        #     cur.pop(len(cur) - 2)
+        #     Anum[len(cur) - 1] = copy.copy(cur)
+        # if isinstance(T[2], list):
+        #     cur[len(cur) - 1] += 1
+        #     Anum.append([])
+        #     rec(T[2])
+        #     cur.pop(len(cur) - 2)
+        #     Anum[len(cur) - 1] = copy.copy(cur)
+        # else:
+        #     cur.append(0)
+        #     Anum.append(copy.copy(cur))
+
+    rec(T)
+
+    return Anum
+
+
 
 # ----------------------------------------------------------------------------
 
@@ -441,8 +508,25 @@ def mutate_op(T):
     op_c = get_item(T, a)       # the char of the op
     # mutant_c : a different op
 
-    raise NotImplementedError()
-    
+    op_list = ["+", "-", "*"]
+
+    for i in range(len(op_list)):
+        if (op_list[i] != op_c):
+            mutant_c = op_list[i]
+            break
+
+    S = T.copy()
+    if len(a) != 1:
+        for i in range(len(a) - 1):
+            S = S[a[i]]
+            if i == len(a) - 2:
+                S[0] = mutant_c
+                T = replace_subtree(T, a[0:len(a) - 1], S)
+                break
+    else:
+        T[0] = mutant_c
+
+    return T
 
 # ----------------------------------------------------------------------------
 
@@ -568,4 +652,7 @@ def cross_over(P1, P2, Q):
 
 
 T = ['-', ['+', ['-', 75, ['-', 10, 3]], ['-', 100, 50]], 3]
-print(decompose(T))
+print(T)
+print(mutate_op(T))
+
+# print(num_address_list(T))
