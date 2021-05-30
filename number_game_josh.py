@@ -370,42 +370,10 @@ def decompose(T, prefix = None):
 
     Aop = op_address_list(T)
     Lop = [get_item(T, x) for x in Aop]
+    Anum = num_address_list(T)
+    Lnum = [get_item(T, x) for x in Anum]
 
-    def rec(T, prefix = None):
-        if isinstance(T, str):
-            return []
-    
-        if prefix is None:
-            prefix = []
-        
-        Anum = [prefix.copy()+[0]] # first adddress is the op of the root of T
-        Anum = rec(T[1], prefix.copy()+[1])
-        Anum.extend(left_al)
-        right_al = rec(T[2], prefix.copy()+[2])
-        Anum.extend(right_al)
-    
-        return Anum
-
-        # if isinstance(T[1], list):
-        #     cur.append(1)
-        #     Anum.append([])
-        #     rec(T[1])
-        #     cur.pop(len(cur) - 2)
-        #     Anum[len(cur) - 1] = copy.copy(cur)
-        # if isinstance(T[2], list):
-        #     cur[len(cur) - 1] += 1
-        #     Anum.append([])
-        #     rec(T[2])
-        #     cur.pop(len(cur) - 2)
-        #     Anum[len(cur) - 1] = copy.copy(cur)
-        # else:
-        #     cur.append(0)
-        #     Anum.append(copy.copy(cur))
-
-    rec(T)
-
-    return Anum
-
+    return Aop, Lop, Anum, Lnum
 
 
 # ----------------------------------------------------------------------------
@@ -506,14 +474,12 @@ def mutate_op(T):
     La = op_address_list(T)
     a = random.choice(La)  # random address of an op in T
     op_c = get_item(T, a)       # the char of the op
-    # mutant_c : a different op
-
+    
     op_list = ["+", "-", "*"]
+    op_list.remove(op_c)
 
-    for i in range(len(op_list)):
-        if (op_list[i] != op_c):
-            mutant_c = op_list[i]
-            break
+    # mutant_c : a different op
+    mutant_c = random.choice(op_list)
 
     S = T.copy()
     if len(a) != 1:
@@ -654,9 +620,13 @@ def cross_over(P1, P2, Q):
 T = ['-', ['+', ['-', 75, ['-', 10, 3]], ['-', 100, 50]], 3]
 
 # Test for num_address_list
-print(T)
-print(num_address_list(T))
+# print(T)
+# print(num_address_list(T))
 
 # Test for mutate_op
+print(T)
+print(mutate_op(T))
+
+# Test for decompose
 # print(T)
-# print(mutate_op(T))
+# print(decompose(T))
