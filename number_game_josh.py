@@ -306,12 +306,12 @@ def num_address_list(T, prefix = None):
     L
     '''
     if isinstance(T, int):
-        return []
+        return [prefix.copy()]
     
     if prefix is None:
         prefix = []
-        
-    L = [prefix.copy()+[1]] # first adddress is the op of the root of T
+    
+    L = []
     left_al = num_address_list(T[1], prefix.copy()+[1])
     L.extend(left_al)
     right_al = num_address_list(T[2], prefix.copy()+[2])
@@ -652,7 +652,11 @@ def cross_over(P1, P2, Q):
 
 
 T = ['-', ['+', ['-', 75, ['-', 10, 3]], ['-', 100, 50]], 3]
-print(T)
-print(mutate_op(T))
 
-# print(num_address_list(T))
+# Test for num_address_list
+print(T)
+print(num_address_list(T))
+
+# Test for mutate_op
+# print(T)
+# print(mutate_op(T))
