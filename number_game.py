@@ -52,6 +52,8 @@ import copy # for deepcopy
 
 import collections
 
+from numpy.random import rand
+
 
 SMALL_NUMBERS = tuple(range(1,11))
 LARGE_NUMBERS = (25, 50, 75, 100)
@@ -215,6 +217,7 @@ def expr_tree_2_polish_str(T):
 # ----------------------------------------------------------------------------
 
 def polish_str_2_expr_tree(pn_str):
+
     '''
     
     Convert a polish notation string of an expression tree
@@ -229,7 +232,9 @@ def polish_str_2_expr_tree(pn_str):
     T
 
     '''
-    T = []
+    pn_str =  map(pn_str,input().split(""))
+
+    #left_p = pn_str.find('[')    
     def find_match(i):
         '''
         Starting at position i where pn_str[i] == '['
@@ -238,16 +243,28 @@ def polish_str_2_expr_tree(pn_str):
         is balanced
         '''
         stack = collections.deque()
+        for x in range(len(i)):
+            if i[x] in '[]':
+                if i[x] == '[':
+                    stack.append(i[x])
+                elif i[x] == ']':
+                    if len(stack) == 1:
+                        return x
+                    else:
+                        stack.pop()
+    
+    T = []
+    for i in range(len(pn_str)-1):
         if pn_str[i] == '[':
-            stack.append(i)
-            if pn_str[i] == ']':
-                stack.pop()
+            closing = find_match(i)
+            T = list(pn_str[i:closing])
+            print(T)
+    return T
 
 
      # .................................................................  
-    left_p = pn_str.find('[')
-   
-    return T
+
+    
  
    
 # ----------------------------------------------------------------------------
@@ -279,6 +296,37 @@ def op_address_list(T, prefix = None):
     left_al = op_address_list(T[1], prefix.copy()+[1])
     L.extend(left_al)
     right_al = op_address_list(T[2], prefix.copy()+[2])
+    L.extend(right_al)
+    
+    return L
+
+def num_address_list(T, prefix = None):
+    '''
+    Return the address list L of the internal nodes of the expresssion tree T
+    
+    If T is a scalar, then L = []
+
+    Note that the function 'decompose' is more general.
+
+    Parameters
+    ----------
+    T : expression tree
+    prefix: prefix to prepend to the addresses returned in L
+
+    Returns
+    -------
+    L
+    '''
+    if isinstance(T, int):
+        return [prefix.copy()]
+    
+    if prefix is None:
+        prefix = []
+    
+    L = []
+    left_al = num_address_list(T[1], prefix.copy()+[1])
+    L.extend(left_al)
+    right_al = num_address_list(T[2], prefix.copy()+[2])
     L.extend(right_al)
     
     return L
@@ -323,34 +371,21 @@ def decompose(T, prefix = None):
     if prefix is None:
         prefix = []
 
-    def reclop(newlist):
-        for i in newlist:
-            if isinstance(i, list):
-                reclop(i) 
-            if isinstance(i, str):
-                Lop.append(i)
-        return Lop
-
-    def reclnum(newlist):
-        for i in newlist:
-            if isinstance(i, list):
-                reclnum(i) 
-            if isinstance(i, int):
-                Lnum.append(i)
-        return Lnum
-            
-    # T =  ['-', ['+', ['-', 75, ['-', 10, 3]], ['-', 100, 50]], 3]
     if isinstance(T, int):
-        Aop = op_address_list(T,prefix=None)
-        Lop = reclop(T) 
+        Aop = []
+        Lop = [] 
         Anum = [prefix]
-        Lnum = reclnum(T)
-
+        Lnum = [T]
         return Aop, Lop, Anum, Lnum
     
     assert isinstance(T, list)
-    
 
+    Aop = op_address_list(T)
+    Lop = [get_item(T, x) for x in Aop]
+    Anum = num_address_list(T)
+    Lnum = [get_item(T, x) for x in Anum]
+
+    return Aop, Lop, Anum, Lnum
 
 
 # ----------------------------------------------------------------------------
@@ -423,10 +458,34 @@ def mutate_num(T, Q):
     
     Aop, Lop, Anum, Lnum = decompose(T)    
     mutant_T = copy.deepcopy(T)
-        
+    
+    random_address_num = random.choice(Anum)    #pick a random address in a tree
     counter_Q = collections.Counter(Q) # some small numbers can be repeated
 
-    raise NotImplementedError()
+    for i in range(len(Q)-1):
+        if (Lnum[i] in Q and Lnum[i] > 10):
+            Q.remove(Lnum[i])   #check if not all nums in Q are used in T
+
+    if len(Q) == 6:  #return non mutated T
+        return T
+    else:      
+        S = T.copy()
+        mutant_num = random.choice(Q)
+        if len(random_address_num) != 1:
+            for i in range(len(random_address_num) - 1):
+                S = S[random_address_num[i]]
+                if i == len(random_address_num) - 2:
+                    S[i] = mutant_num
+                    T = replace_subtree(T, random_address_num[0:len(random_address_num) - 1], S)
+                    break
+        else:
+            T[2] = mutant_num
+        return T
+        
+        
+
+
+    
     
 
 # ----------------------------------------------------------------------------
@@ -451,14 +510,30 @@ def mutate_op(T):
     La = op_address_list(T)
     a = random.choice(La)  # random address of an op in T
     op_c = get_item(T, a)       # the char of the op
-    # mutant_c : a different op
-
-    raise NotImplementedError()
     
+    op_list = ["+", "-", "*"]
+    op_list.remove(op_c)
+
+    # mutant_c : a different op
+    mutant_c = random.choice(op_list)
+
+    S = T.copy()
+    if len(a) != 1:
+        for i in range(len(a) - 1):
+            S = S[a[i]]
+            if i == len(a) - 2:
+                S[0] = mutant_c
+                T = replace_subtree(T, a[0:len(a) - 1], S)
+                break
+    else:
+        T[0] = mutant_c
+
+    return T
 
 # ----------------------------------------------------------------------------
 
 def cross_over(P1, P2, Q):    
+
     '''
     Perform crossover on two non trivial parents
     
@@ -578,6 +653,26 @@ def cross_over(P1, P2, Q):
     
     return C1, C2
 
-# polish_str_2_expr_tree("[+,[*,5,4],[-,100,[/,20,2]]]")
-a= "[-,9,8]"
-expr_tree_2_polish_str(a)
+
+T = ['-', ['+', ['-', 75, ['-', 10, 3]], ['-', 100, 50]], 3]
+pn_str = "['-', ['+', ['-', 75, ['-', 10, 3]], ['-', 100, 50]], 3]"
+
+print(polish_str_2_expr_tree(pn_str))
+
+# Test for num_address_list
+# print(T)
+# print(num_address_list(T))
+
+# Test for mutate_op
+# print(T)
+# print(mutate_op(T))
+
+# Test for decompose
+# print(T)
+# print(decompose(T))
+
+# Q = pick_numbers()
+# # Test for mutate_num
+# print(T)
+# print(mutate_num(T,Q))
+
