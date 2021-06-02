@@ -52,6 +52,8 @@ import copy # for deepcopy
 
 import collections
 
+import re
+
 
 SMALL_NUMBERS = tuple(range(1,11))
 LARGE_NUMBERS = (25, 50, 75, 100)
@@ -238,22 +240,66 @@ def polish_str_2_expr_tree(pn_str):
         is balanced
         '''
         stack = collections.deque()
-        for x in range(len(i)):
-            if i[x] in '[]':
-                if i[x] == '[':
-                    stack.append(i[x])
-                elif i[x] == ']':
+        while i < (len(pn_str)):
+            if pn_str[i] in '[]':
+                if pn_str[i] == '[':
+                    stack.append(pn_str[i])
+                elif pn_str[i] == ']':
                     if len(stack) == 1:
-                        return x
+                        return i
                     else:
                         stack.pop()
+            i += 1
 
      # .................................................................  
 
     left_p = pn_str.find('[')
- 
-    raise NotImplementedError()
- 
+    right_p = find_match(left_p)
+    # [-, [+, [-, 75, [-, 10, 3]], [-, 100, 50]], 3]
+    T = [pn_str[1], [], []]
+    if pn_str[4] == '[':
+        left_p = 4
+        right_p = find_match(left_p)
+        left_al = polish_str_2_expr_tree(pn_str[left_p:right_p+1])
+        T[1] = left_al
+        if pn_str[right_p+3] == '[':
+            left_p = right_p+3
+            right_p = find_match(left_p)
+            right_al = polish_str_2_expr_tree(pn_str[left_p:right_p+1])
+            T[2] = right_al
+        else:
+            right_al = ''
+            for char in pn_str[right_p+3:]:
+                if char != ',' and char != ']':
+                    right_al += char
+                else:
+                    break
+            T[2] = int(right_al)
+    else:
+        C = 0
+        left_al = ''
+        for char in pn_str[4:]:
+            if char != ',':
+                left_al += char
+                C+=1
+            else:
+                break
+        T[1] = int(left_al)
+        if pn_str[4+C+2] == '[':
+            left_p = 4+C+2
+            right_p = find_match(left_p)
+            right_al = polish_str_2_expr_tree(pn_str[left_p:right_p+1])
+            T[2] = right_al
+        else:
+            right_al = ''
+            for char in pn_str[4+C+2:]:
+                if char != ',' and char != ']':
+                    right_al += char
+                else:
+                    break
+            T[2] = int(right_al)
+    
+    return T
    
 # ----------------------------------------------------------------------------
 
@@ -443,13 +489,38 @@ def mutate_num(T, Q):
     A mutated copy of T
 
     '''
-    
+        
     Aop, Lop, Anum, Lnum = decompose(T)    
     mutant_T = copy.deepcopy(T)
         
     counter_Q = collections.Counter(Q) # some small numbers can be repeated
 
-    raise NotImplementedError()
+    print(Q)
+    for num in Q:
+        if num in Lnum and num > 10:
+            Q.remove(num)
+
+    print(Q)
+    
+    if len(Q) == 6:
+        return T.copy()
+
+    mutant_c = random.choice(Q)
+
+    a = random.choice(Anum)  # random address of an op in T
+
+    print(a)
+    print(mutant_c)
+
+    S = T.copy()
+    for i in range(len(a) - 1):
+        S = S[a[i]]
+        if i == len(a) - 2:
+            S[a[len(a) - 1]] = mutant_c
+            T = replace_subtree(T, a[0:len(a) - 1], S)
+            break
+
+    return T
     
 
 # ----------------------------------------------------------------------------
@@ -624,3 +695,7 @@ def cross_over(P1, P2, Q):
         C2 = replace_subtree(C2, aS2, R2)
 
     return C1, C2
+
+T =  '[-, [+, [-, 75, [-, 10, 3]], [-, 100, 50]], 3]'
+print(T)
+print(polish_str_2_expr_tree(T))
