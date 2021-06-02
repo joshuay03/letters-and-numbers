@@ -232,8 +232,6 @@ def polish_str_2_expr_tree(pn_str):
     T
 
     '''
-    pn_str =  map(pn_str,input().split(""))
-
     #left_p = pn_str.find('[')    
     def find_match(i):
         '''
@@ -458,28 +456,31 @@ def mutate_num(T, Q):
     
     Aop, Lop, Anum, Lnum = decompose(T)    
     mutant_T = copy.deepcopy(T)
-    
     random_address_num = random.choice(Anum)    #pick a random address in a tree
     counter_Q = collections.Counter(Q) # some small numbers can be repeated
 
-    for i in range(len(Q)-1):
-        if (Lnum[i] in Q and Lnum[i] > 10):
-            Q.remove(Lnum[i])   #check if not all nums in Q are used in T
+    for num in Q:
+        if num in Lnum and num > 10:
+            Q.remove(num)
+
+    if len(Q) == 6:
+        return mutant_T.copy()
+
+    mutant_c = random.choice(Q)
 
     if len(Q) == 6:  #return non mutated T
         return T
     else:      
-        S = T.copy()
         mutant_num = random.choice(Q)
         if len(random_address_num) != 1:
             for i in range(len(random_address_num) - 1):
-                S = S[random_address_num[i]]
+                mutant_T = mutant_T[random_address_num[i]]
                 if i == len(random_address_num) - 2:
-                    S[i] = mutant_num
-                    T = replace_subtree(T, random_address_num[0:len(random_address_num) - 1], S)
+                    mutant_T[i] = mutant_num
+                    mutant_T = replace_subtree(T, random_address_num[0:len(random_address_num) - 1], mutant_T)
                     break
         else:
-            T[2] = mutant_num
+            mutant_T[2] = mutant_num
         return T
         
         

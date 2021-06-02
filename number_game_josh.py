@@ -409,7 +409,7 @@ def decompose(T, prefix = None):
         Aop = []
         Lop = [] 
         Anum = [prefix]
-        Lnum = [T]
+        Lnum = []
         return Aop, Lop, Anum, Lnum
     
     assert isinstance(T, list)
@@ -492,35 +492,30 @@ def mutate_num(T, Q):
         
     Aop, Lop, Anum, Lnum = decompose(T)    
     mutant_T = copy.deepcopy(T)
-        
+    random_address_num = random.choice(Anum)    #pick a random address in a tree
     counter_Q = collections.Counter(Q) # some small numbers can be repeated
 
-    print(Q)
+   
+
     for num in Q:
         if num in Lnum and num > 10:
             Q.remove(num)
 
-    print(Q)
-    
-    if len(Q) == 6:
-        return T.copy()
+    if len(Q) == 6 and T[:] in Q:   #check if every value in T exists in Q
+        return mutant_T
 
-    mutant_c = random.choice(Q)
-
-    a = random.choice(Anum)  # random address of an op in T
-
-    print(a)
-    print(mutant_c)
-
-    S = T.copy()
-    for i in range(len(a) - 1):
-        S = S[a[i]]
-        if i == len(a) - 2:
-            S[a[len(a) - 1]] = mutant_c
-            T = replace_subtree(T, a[0:len(a) - 1], S)
-            break
-
-    return T
+    else:      
+        mutant_num = random.choice(Q)
+        if len(random_address_num) != 1:
+            for i in range(len(random_address_num) - 1):
+                mutant_T = mutant_T[random_address_num[i]]
+                if i == len(random_address_num) - 2:
+                    mutant_T[i] = mutant_num
+                    mutant_T = replace_subtree(T, random_address_num[0:len(random_address_num) - 1], mutant_T)
+                    break
+        else:
+            mutant_T[2] = mutant_num
+        return mutant_T
     
 
 # ----------------------------------------------------------------------------
@@ -696,6 +691,8 @@ def cross_over(P1, P2, Q):
 
     return C1, C2
 
-T =  '[-, [+, [-, 75, [-, 10, 3]], [-, 100, 50]], 3]'
+# T =  ['-', ['+', ['-', 75, ['-', 10, 3]], ['-', 100, 50]], 3]
+T = ['+', 3, ['-', ['+', 6, ['+', 9, 5]], ['+', 8, 10]]]
 print(T)
-print(polish_str_2_expr_tree(T))
+Q = pick_numbers()
+print(mutate_num(T,Q))

@@ -28,7 +28,6 @@ target = 322
 
 # 
 
-
 while True:
     Q = pick_numbers()
     P1, U1 = bottom_up_creator(Q)
@@ -61,4 +60,8 @@ print(C2)
 print('-------------- display child 1 -------- ')
 
 display_tree(C1)
+
+print('-------------- display child 2 -------- ')
+
+display_tree(C2)
 

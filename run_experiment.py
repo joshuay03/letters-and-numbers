@@ -45,7 +45,7 @@ Created on Sat Apr 17 17:46:18 2021
 
 import numpy as np
 
-from number_game import pick_numbers, eval_tree, display_tree
+from number_game_josh import pick_numbers, eval_tree, display_tree
 
 from genetic_algorithm import  evolve_pop
 
@@ -60,11 +60,11 @@ target = np.random.randint(1,1000)
 # Q = [25,10,2,9,8,7]
 # target = 449
 
-# Q = [50,75,9,10,2,2]
-# target = 533
+Q = [50,75,9,10,2,2]
+target = 533
 
-Q = [100,25,7,5,3,1]
-target = 728
+# Q = [100,25,7,5,3,1]
+# target = 728
 
 Q.sort()
 
