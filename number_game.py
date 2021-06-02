@@ -517,19 +517,12 @@ def mutate_op(T):
 
     # mutant_c : a different op
     mutant_c = random.choice(op_list)
+    print('address',a)
+    print('c',mutant_c)
+    mutant_T = copy.deepcopy(T)
+    mutant_T = replace_subtree(mutant_T,a,mutant_c)
 
-    S = T.copy()
-    if len(a) != 1:
-        for i in range(len(a) - 1):
-            S = S[a[i]]
-            if i == len(a) - 2:
-                S[0] = mutant_c
-                T = replace_subtree(T, a[0:len(a) - 1], S)
-                break
-    else:
-        T[0] = mutant_c
-
-    return T
+    return mutant_T
 
 # ----------------------------------------------------------------------------
 
@@ -658,15 +651,15 @@ def cross_over(P1, P2, Q):
 T = ['-', ['+', ['-', 75, ['-', 10, 3]], ['-', 100, 50]], 3]
 pn_str = "['-', ['+', ['-', 75, ['-', 10, 3]], ['-', 100, 50]], 3]"
 
-print(polish_str_2_expr_tree(pn_str))
+# print(polish_str_2_expr_tree(pn_str))
 
 # Test for num_address_list
 # print(T)
 # print(num_address_list(T))
 
 # Test for mutate_op
-# print(T)
-# print(mutate_op(T))
+print(T)
+print(mutate_op(T))
 
 # Test for decompose
 # print(T)

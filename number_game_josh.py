@@ -495,36 +495,23 @@ def mutate_num(T, Q):
     random_address_num = random.choice(Anum)    #pick a random address in a tree
     counter_Q = collections.Counter(Q) # some small numbers can be repeated
 
-    
-    print(Lnum)
-    print('new dic',counter_Q)
+
 
     for number in Lnum:
         if number in Q:
             counter_Q.subtract([number])
-            print(counter_Q[number])
-        
-    print('new dic',counter_Q)
-
-    # for num in Q:
-    #     if num in Lnum and num > 10:
-    #         Q.remove(num)
-    print(counter_Q.values())
-    print('sum ===',sum(counter_Q.values()))
-
+            #some small numbers can be repeated
+            if (counter_Q[number] <= 0):
+                counter_Q[number] = 0
+    #when all Q values dont exist in T
     if (sum(counter_Q.values()) != 0):
         mutant_num = random.choice(list(counter_Q.keys()))
         while(counter_Q[mutant_num] == 0):
             mutant_num = random.choice(list(counter_Q.keys()))
+
         mutant_T = replace_subtree(mutant_T, random_address_num, mutant_num)
-        print("address",random_address_num)     
-        print(mutant_num)
         return mutant_T
     else:            
-        # print("address",random_address_num)   
-        # mutant_num = random.choice(list(counter_Q.keys()))
-        # print(mutant_num)
-        # mutant_T = replace_subtree(mutant_T, random_address_num, mutant_num)
         return mutant_T
     
 
@@ -557,17 +544,10 @@ def mutate_op(T):
     # mutant_c : a different op
     mutant_c = random.choice(op_list)
 
-    S = T.copy()
-    if len(a) != 1:
-        for i in range(len(a) - 1):
-            S = S[a[i]]
-            if i == len(a) - 2:
-                S[0] = mutant_c
-                T = replace_subtree(T, a[0:len(a) - 1], S)
-                break
-    else:
-        S[0] = mutant_c
-    return S
+    mutant_T = copy.deepcopy(T)
+    mutant_T = replace_subtree(mutant_T,a,mutant_c)
+
+    return mutant_T
 
 # ----------------------------------------------------------------------------
 
