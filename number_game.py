@@ -458,7 +458,7 @@ def mutate_num(T, Q):
     mutant_T = copy.deepcopy(T)
     random_address_num = random.choice(Anum)    #pick a random address in a tree
     counter_Q = collections.Counter(Q) # some small numbers can be repeated
-
+    #previous method
     for num in Q:
         if num in Lnum and num > 10:
             Q.remove(num)

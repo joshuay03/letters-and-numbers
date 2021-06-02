@@ -495,26 +495,36 @@ def mutate_num(T, Q):
     random_address_num = random.choice(Anum)    #pick a random address in a tree
     counter_Q = collections.Counter(Q) # some small numbers can be repeated
 
-   
+    
+    print(Lnum)
+    print('new dic',counter_Q)
 
-    for num in Q:
-        if num in Lnum and num > 10:
-            Q.remove(num)
+    for number in Lnum:
+        if number in Q:
+            counter_Q.subtract([number])
+            print(counter_Q[number])
+        
+    print('new dic',counter_Q)
 
-    if len(Q) == 6 and T[:] in Q:   #check if every value in T exists in Q
+    # for num in Q:
+    #     if num in Lnum and num > 10:
+    #         Q.remove(num)
+    print(counter_Q.values())
+    print('sum ===',sum(counter_Q.values()))
+
+    if (sum(counter_Q.values()) != 0):
+        mutant_num = random.choice(list(counter_Q.keys()))
+        while(counter_Q[mutant_num] == 0):
+            mutant_num = random.choice(list(counter_Q.keys()))
+        mutant_T = replace_subtree(mutant_T, random_address_num, mutant_num)
+        print("address",random_address_num)     
+        print(mutant_num)
         return mutant_T
-
-    else:      
-        mutant_num = random.choice(Q)
-        if len(random_address_num) != 1:
-            for i in range(len(random_address_num) - 1):
-                mutant_T = mutant_T[random_address_num[i]]
-                if i == len(random_address_num) - 2:
-                    mutant_T[i] = mutant_num
-                    mutant_T = replace_subtree(T, random_address_num[0:len(random_address_num) - 1], mutant_T)
-                    break
-        else:
-            mutant_T[2] = mutant_num
+    else:            
+        # print("address",random_address_num)   
+        # mutant_num = random.choice(list(counter_Q.keys()))
+        # print(mutant_num)
+        # mutant_T = replace_subtree(mutant_T, random_address_num, mutant_num)
         return mutant_T
     
 
@@ -556,9 +566,8 @@ def mutate_op(T):
                 T = replace_subtree(T, a[0:len(a) - 1], S)
                 break
     else:
-        T[0] = mutant_c
-
-    return T
+        S[0] = mutant_c
+    return S
 
 # ----------------------------------------------------------------------------
 
@@ -691,8 +700,8 @@ def cross_over(P1, P2, Q):
 
     return C1, C2
 
-# T =  ['-', ['+', ['-', 75, ['-', 10, 3]], ['-', 100, 50]], 3]
-T = ['+', 3, ['-', ['+', 6, ['+', 9, 5]], ['+', 8, 10]]]
+T =  ['-', ['+', ['-', 75, ['-', 10, 3]], ['-', 100, 50]], 3]
+# T = ['+', 3, ['-', ['+', 6, ['+', 9, 5]], ['+', 8, 10]]]
 print(T)
-Q = pick_numbers()
+Q = [3,10,50,75,100,5]
 print(mutate_num(T,Q))
