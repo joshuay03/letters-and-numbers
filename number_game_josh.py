@@ -52,8 +52,6 @@ import copy # for deepcopy
 
 import collections
 
-import re
-
 
 SMALL_NUMBERS = tuple(range(1,11))
 LARGE_NUMBERS = (25, 50, 75, 100)
@@ -68,8 +66,7 @@ def my_team():
     of triplet of the form (student_number, first_name, last_name)
     
     '''
-#    return [ (1234567, 'Ada', 'Lovelace'), (1234568, 'Grace', 'Hopper'), (1234569, 'Eva', 'Tardos') ]
-    raise NotImplementedError()
+    return [ (10404074, 'Joshua', 'Young'), (1234568, 'Grace', 'Hopper') ]
 
 
 # ----------------------------------------------------------------------------
@@ -253,9 +250,6 @@ def polish_str_2_expr_tree(pn_str):
 
      # .................................................................  
 
-    left_p = pn_str.find('[')
-    right_p = find_match(left_p)
-    # [-, [+, [-, 75, [-, 10, 3]], [-, 100, 50]], 3]
     T = [pn_str[1], [], []]
     if pn_str[4] == '[':
         left_p = 4
@@ -637,7 +631,6 @@ def cross_over(P1, P2, Q):
     aS1 = Aop_1[i1][:d1] # address of the subtree S1 
     S1 = get_item(C1, aS1)
 
-    # ABOUT 3 LINES DELETED
     d2 = len(Aop_2[i2])-1
     aS2 = Aop_2[i2][:d2] # address of the subtree S2
     S2 = get_item(C2, aS2)
@@ -665,7 +658,6 @@ def cross_over(P1, P2, Q):
     # count the numbers (their occurences) in the candidate child C2
     counter_2 = collections.Counter(Lnum_1[a1:b1]+nums_C2mS2)
 
-    # ABOUT 10 LINES DELETED
     # Test whether child C2 is ok
     if all(counter_Q[v]>=counter_2[v] for v in counter_Q):
         # candidate is fine!  :-)
@@ -679,9 +671,3 @@ def cross_over(P1, P2, Q):
         C2 = replace_subtree(C2, aS2, R2)
 
     return C1, C2
-
-T =  ['-', ['+', ['-', 75, ['-', 10, 3]], ['-', 100, 50]], 3]
-# T = ['+', 3, ['-', ['+', 6, ['+', 9, 5]], ['+', 8, 10]]]
-print(T)
-Q = [3,10,50,75,100,5]
-print(mutate_num(T,Q))
