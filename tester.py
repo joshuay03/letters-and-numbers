@@ -13,7 +13,7 @@ Test crossover
 """
 
 # from lan import mutate, get_item, op_address_list, decompose
-from number_game_josh import *
+from number_game import *
 
 
 
@@ -27,6 +27,7 @@ Q = pick_numbers()
 target = 322
 
 # 
+
 
 while True:
     Q = pick_numbers()
@@ -60,8 +61,4 @@ print(C2)
 print('-------------- display child 1 -------- ')
 
 display_tree(C1)
-
-print('-------------- display child 2 -------- ')
-
-display_tree(C2)
 

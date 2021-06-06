@@ -45,7 +45,7 @@ Created on Sat Apr 17 17:46:18 2021
 
 import numpy as np
 
-from number_game_josh import pick_numbers, eval_tree, display_tree
+from number_game import pick_numbers, eval_tree, display_tree
 
 from genetic_algorithm import  evolve_pop
 
@@ -82,5 +82,4 @@ if v==0:
     print("\n***** Perfect Score!! *****")
 print(f'\ntarget {target} , tree value {eval_tree(T)}\n')
 display_tree(T)
-
 

@@ -20,7 +20,7 @@ algorithm_parameters={'max_num_iteration': None,\
 
 """
 
-from number_game_josh import (bottom_up_creator, eval_tree, cross_over, 
+from number_game import (bottom_up_creator, eval_tree, cross_over, 
                          mutate_num, mutate_op, display_tree)
 
 
