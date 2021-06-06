@@ -43,39 +43,28 @@ L&N game.
 
 '''
 
-
-
 import numpy as np
 import random
-
 import copy # for deepcopy
-
 import collections
-
-from numpy.random import rand
-
+import time
 
 SMALL_NUMBERS = tuple(range(1,11))
 LARGE_NUMBERS = (25, 50, 75, 100)
 
-
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 
 def my_team():
     '''
     Return the list of the team members of this assignment submission as a list
     of triplet of the form (student_number, first_name, last_name)
-    
     '''
-#    return [ (1234567, 'Ada', 'Lovelace'), (1234568, 'Grace', 'Hopper'), (1234569, 'Eva', 'Tardos') ]
-    raise NotImplementedError()
-
+    return [ (10404074, 'Joshua', 'Young'), (10240977, 'Jun', 'Chen') ]
 
 # ----------------------------------------------------------------------------
 
 def pick_numbers():
-    '''    
+    '''
     Create a random list of numbers according to the L&N game rules.
     
     Returns
@@ -91,7 +80,6 @@ def pick_numbers():
         if x in LN:
             LN.remove(x)
     return Q
-
 
 # ----------------------------------------------------------------------------
 
@@ -111,7 +99,6 @@ def bottom_up_creator(Q):
     -------
     T : expression tree 
     U : values used in the tree
-
     '''
     n = random.randint(1,6) # number of values we are going to use
     
@@ -135,12 +122,11 @@ def bottom_up_creator(Q):
         F.append(T)
     # assert len(F)==1
     return F[0], U
-  
+
 # ---------------------------------------------------------------------------- 
 
 def display_tree(T, indent=0):
     '''
-    
     Eval the algebraic expression represented by T
     
     Parameters
@@ -149,7 +135,6 @@ def display_tree(T, indent=0):
     indent: indentation for the recursive call
 
     Returns None
-
     '''
     # if T is a scalar, then we return it directly
     if isinstance(T, int):
@@ -161,12 +146,11 @@ def display_tree(T, indent=0):
     display_tree(T[1], indent+1)
     print('|'*indent)
     display_tree(T[2], indent+1)
-   
+
 # ---------------------------------------------------------------------------- 
 
 def eval_tree(T):
     '''
-    
     Eval the algebraic expression represented by T
     
     Parameters
@@ -176,7 +160,6 @@ def eval_tree(T):
     Returns
     -------
     value of the algebraic expression represented by the T
-
     '''
     # if T is a scalar, then we return it directly
     if isinstance(T, int):
@@ -188,8 +171,7 @@ def eval_tree(T):
     right_value = eval_tree(T[2])
     return eval( str(left_value) +root_item + str(right_value) )
     # return eval(root_item.join([str(left_value), str(right_value)]))
-   
-     
+
 # ---------------------------------------------------------------------------- 
 
 def expr_tree_2_polish_str(T):
@@ -203,7 +185,6 @@ def expr_tree_2_polish_str(T):
     Returns
     -------
     string in Polish notation represention the expression tree T
-
     '''
     if isinstance(T, int):
         return str(T)
@@ -212,14 +193,11 @@ def expr_tree_2_polish_str(T):
     left_str = expr_tree_2_polish_str(T[1])
     right_str = expr_tree_2_polish_str(T[2])
     return '[' + ','.join([root_item,left_str,right_str]) + ']'
-    
 
 # ----------------------------------------------------------------------------
 
 def polish_str_2_expr_tree(pn_str):
-
     '''
-    
     Convert a polish notation string of an expression tree
     into an expression tree T.
 
@@ -230,9 +208,7 @@ def polish_str_2_expr_tree(pn_str):
     Returns
     -------
     T
-
     '''
-    #left_p = pn_str.find('[')    
     def find_match(i):
         '''
         Starting at position i where pn_str[i] == '['
@@ -241,30 +217,78 @@ def polish_str_2_expr_tree(pn_str):
         is balanced
         '''
         stack = collections.deque()
-        for x in range(len(i)):
-            if i[x] in '[]':
-                if i[x] == '[':
-                    stack.append(i[x])
-                elif i[x] == ']':
+        while i < (len(pn_str)):
+            if pn_str[i] in '[]':
+                if pn_str[i] == '[':
+                    # Place opening bracket on top of stack
+                    stack.append(pn_str[i])
+                elif pn_str[i] == ']':
+                    # If only one bracket left in the stack i has to be the index of its match
                     if len(stack) == 1:
-                        return x
+                        return i
                     else:
+                        # Remove the matching opening bracket
                         stack.pop()
-    
-    T = []
-    for i in range(len(pn_str)-1):
-        if pn_str[i] == '[':
-            closing = find_match(i)
-            T = list(pn_str[i:closing])
-            print(T)
-    return T
-
+            i += 1
 
      # .................................................................  
 
+    # Insert the operator and place holders for the items and indices 1 and 2
+    T = [pn_str[1], [], []]
+
+    # If item at index 1 is a list
+    if pn_str[4] == '[':
+        left_p = 4
+        right_p = find_match(left_p)
+        left_al = polish_str_2_expr_tree(pn_str[left_p:right_p+1])
+        T[1] = left_al
+
+        # If item at index 2 is a list
+        if pn_str[right_p+3] == '[':
+            left_p = right_p+3
+            right_p = find_match(left_p)
+            right_al = polish_str_2_expr_tree(pn_str[left_p:right_p+1])
+            T[2] = right_al
+        # If item at index 2 is an integer
+        else:
+            right_al = ''
+            for char in pn_str[right_p+3:]:
+                if char != ',' and char != ']':
+                    right_al += char
+                else:
+                    break
+            T[2] = int(right_al)
+
+    # If item at index 1 is an integer
+    else:
+        C = 0
+        left_al = ''
+        for char in pn_str[4:]:
+            if char != ',':
+                left_al += char
+                C+=1
+            else:
+                break
+        T[1] = int(left_al)
+
+        # If item at index 2 is a list
+        if pn_str[4+C+2] == '[':
+            left_p = 4+C+2
+            right_p = find_match(left_p)
+            right_al = polish_str_2_expr_tree(pn_str[left_p:right_p+1])
+            T[2] = right_al
+        # If item at index 2 is an integer
+        else:
+            right_al = ''
+            for char in pn_str[4+C+2:]:
+                if char != ',' and char != ']':
+                    right_al += char
+                else:
+                    break
+            T[2] = int(right_al)
     
- 
-   
+    return T
+
 # ----------------------------------------------------------------------------
 
 def op_address_list(T, prefix = None):
@@ -329,7 +353,6 @@ def num_address_list(T, prefix = None):
     
     return L
 
-
 # ----------------------------------------------------------------------------
 
 def decompose(T, prefix = None):
@@ -364,7 +387,6 @@ def decompose(T, prefix = None):
     Returns
     -------
     Aop, Lop, Anum, Lnum
-
     '''
     if prefix is None:
         prefix = []
@@ -373,7 +395,7 @@ def decompose(T, prefix = None):
         Aop = []
         Lop = [] 
         Anum = [prefix]
-        Lnum = [T]
+        Lnum = []
         return Aop, Lop, Anum, Lnum
     
     assert isinstance(T, list)
@@ -384,7 +406,6 @@ def decompose(T, prefix = None):
     Lnum = [get_item(T, x) for x in Anum]
 
     return Aop, Lop, Anum, Lnum
-
 
 # ----------------------------------------------------------------------------
 
@@ -400,13 +421,12 @@ def get_item(T, a):
     Returns
     -------
     the item at address a
-
     '''
     if len(a)==0:
         return T
     # else
     return get_item(T[a[0]], a[1:])
-        
+
 # ----------------------------------------------------------------------------
 
 def replace_subtree(T, a, S):
@@ -426,7 +446,7 @@ def replace_subtree(T, a, S):
 
     Warning: the original tree T is modified. 
              Use copy.deepcopy()  if you want to preserve the original tree.
-    '''    
+    '''
     
     # base case, address empty
     if len(a)==0:
@@ -435,7 +455,6 @@ def replace_subtree(T, a, S):
     # recursive case
     T[a[0]] = replace_subtree(T[a[0]], a[1:], S)
     return T
-
 
 # ----------------------------------------------------------------------------
 
@@ -451,42 +470,28 @@ def mutate_num(T, Q):
     Returns
     -------
     A mutated copy of T
-
     '''
-    
     Aop, Lop, Anum, Lnum = decompose(T)    
     mutant_T = copy.deepcopy(T)
-    random_address_num = random.choice(Anum)    #pick a random address in a tree
-    counter_Q = collections.Counter(Q) # some small numbers can be repeated
-    #previous method
-    for num in Q:
-        if num in Lnum and num > 10:
-            Q.remove(num)
+    random_address_num = random.choice(Anum) # Pick a random address in a tree
+    counter_Q = collections.Counter(Q) # Some small numbers can be repeated
 
-    if len(Q) == 6:
-        return mutant_T.copy()
+    for number in Lnum:
+        if number in Q:
+            counter_Q.subtract([number])
+            # Some small numbers can be repeated
+            if (counter_Q[number] <= 0):
+                counter_Q[number] = 0
+    # When all Q values don't exist in T
+    if (sum(counter_Q.values()) != 0):
+        mutant_num = random.choice(list(counter_Q.keys()))
+        while(counter_Q[mutant_num] == 0):
+            mutant_num = random.choice(list(counter_Q.keys()))
 
-    mutant_c = random.choice(Q)
-
-    if len(Q) == 6:  #return non mutated T
-        return T
-    else:      
-        mutant_num = random.choice(Q)
-        if len(random_address_num) != 1:
-            for i in range(len(random_address_num) - 1):
-                mutant_T = mutant_T[random_address_num[i]]
-                if i == len(random_address_num) - 2:
-                    mutant_T[i] = mutant_num
-                    mutant_T = replace_subtree(T, random_address_num[0:len(random_address_num) - 1], mutant_T)
-                    break
-        else:
-            mutant_T[2] = mutant_num
-        return T
-        
-        
-
-
-    
+        mutant_T = replace_subtree(mutant_T, random_address_num, mutant_num)
+        return mutant_T
+    else:            
+        return mutant_T
     
 
 # ----------------------------------------------------------------------------
@@ -503,22 +508,20 @@ def mutate_op(T):
     Returns
     -------
     A mutated copy of T
-
     '''
     if isinstance(T, int):
         return T
     
     La = op_address_list(T)
-    a = random.choice(La)  # random address of an op in T
-    op_c = get_item(T, a)       # the char of the op
-    
-    op_list = ["+", "-", "*"]
+    a = random.choice(La) # random address of an op in T
+    op_c = get_item(T, a) # the char of the op
+
+    op_list = ["+", "-", "*"] # List of possible operators
     op_list.remove(op_c)
 
     # mutant_c : a different op
     mutant_c = random.choice(op_list)
-    print('address',a)
-    print('c',mutant_c)
+
     mutant_T = copy.deepcopy(T)
     mutant_T = replace_subtree(mutant_T,a,mutant_c)
 
@@ -527,7 +530,6 @@ def mutate_op(T):
 # ----------------------------------------------------------------------------
 
 def cross_over(P1, P2, Q):    
-
     '''
     Perform crossover on two non trivial parents
     
@@ -545,7 +547,6 @@ def cross_over(P1, P2, Q):
     -------
     C1, C2 : two children obtained by crossover
     '''
-    
     def get_num_ind(aop, Anum):
         '''
         Return the indices [a,b) of the range of numbers
@@ -561,7 +562,6 @@ def cross_over(P1, P2, Q):
         Returns
         -------
         a, b : endpoints of the semi-open interval
-        
         '''
         d = len(aop)-1  # depth of the operator. 
                         # Root of the expression tree is a depth 0
@@ -613,8 +613,9 @@ def cross_over(P1, P2, Q):
     aS1 = Aop_1[i1][:d1] # address of the subtree S1 
     S1 = get_item(C1, aS1)
 
-    # ABOUT 3 LINES DELETED
-    raise NotImplementedError()
+    d2 = len(Aop_2[i2])-1
+    aS2 = Aop_2[i2][:d2] # address of the subtree S2
+    S2 = get_item(C2, aS2)
 
     # print(' DEBUG -------- S1 and S2 ----------') # DEBUG
     # print(S1)
@@ -625,7 +626,7 @@ def cross_over(P1, P2, Q):
     counter_1 = collections.Counter(Lnum_2[a2:b2]+nums_C1mS1)
     
     # Test whether child C1 is ok
-    if all(counter_Q[v]>=counter_1[v]  for v in counter_Q):
+    if all(counter_Q[v]>=counter_1[v] for v in counter_Q):
         # candidate is fine!  :-)
         C1 = replace_subtree(C1, aS1, S2)
     else:
@@ -638,35 +639,245 @@ def cross_over(P1, P2, Q):
         
     # count the numbers (their occurences) in the candidate child C2
     counter_2 = collections.Counter(Lnum_1[a1:b1]+nums_C2mS2)
-    
+
     # Test whether child C2 is ok
-    
-    # ABOUT 10 LINES DELETED
-    raise NotImplementedError()
-    
-    
+    if all(counter_Q[v]>=counter_2[v] for v in counter_Q):
+        # candidate is fine!  :-)
+        C2 = replace_subtree(C2, aS2, S1)
+    else:
+        available_nums = counter_Q.copy()
+        available_nums.subtract(
+            collections.Counter(nums_C2mS2)
+            )
+        R2, _ = bottom_up_creator(list(available_nums.elements()))
+        C2 = replace_subtree(C2, aS2, R2)
+
     return C1, C2
 
+default_GA_params = {
+    'max_num_iteration': 50,
+    'population_size':100,
+    'mutation_probability':0.1,
+    'elit_ratio': 0.05,
+    'parents_portion': 0.3}
 
-T = ['-', ['+', ['-', 75, ['-', 10, 3]], ['-', 100, 50]], 3]
-pn_str = "['-', ['+', ['-', 75, ['-', 10, 3]], ['-', 100, 50]], 3]"
 
-# print(polish_str_2_expr_tree(pn_str))
+def evolve_pop(Q, target, **ga_params):
+    '''
+    Evolve a population of expression trees for the game
+    Letters and Numbers given a target value and a set of numbers.
+    
 
-# Test for num_address_list
-# print(T)
-# print(num_address_list(T))
+    Parameters
+    ----------
+    Q : list of integers
+        Integers that were drawn by the game host
+    
+    target: integer
+           target value of the game
+        
+    params : dictionary, optional
+        The default is GA_params.
+        Dictionary of parameters for the genetic algorithm
 
-# Test for mutate_op
-print(T)
-print(mutate_op(T))
+    Returns
+    -------
+    v, T: the best expression tree found and its value
 
-# Test for decompose
-# print(T)
-# print(decompose(T))
+    '''
+    params = default_GA_params.copy()
+    params.update(ga_params)
+    
+    # print('GA Parameters ', params)
+    
+    mutation_probability = params['mutation_probability']
+    pop_size = params['population_size']
+    
+    # ------------- Initialize Population ------------------------
+    
+    pop = [] # list of pairs (cost, individuals)
+    
+    for _ in range(pop_size):
+        T, _ = bottom_up_creator(Q)
+        cost = abs(target-eval_tree(T))
+        pop.append((cost,T))
+    
+    # Sort the initial population
+    # print(pop) # debug
+    pop.sort(key=lambda x:x[0])
+    
+    # Report
+    # print('\n'+'-'*40+'\n')
+    # print("The best individual of the initial population has a cost of {}".format(pop[0][0]))
+    # print("The best individual is \n")
+    # display_tree(pop[0][1])
+    # print('\n')
+    # ------------- Loop on generations ------------------------
+    
+    # Rank of last individual in the current population
+    # allowed to breed.
+    rank_parent = int(params['parents_portion'] * 
+                                      params['population_size'])
+    
+    # Rank of the last elite individual. The elite is copied unchanged 
+    # into the next generation.
+    rank_elite = max(1, int(params['elit_ratio'] *
+                                      params['population_size']))
+    
+    for g in range(params['max_num_iteration']):
+        # Generate children
+        children = []
+        while len(children) < pop_size:
+            # pick two parents
+            (_, P1), (_, P2) = random.sample(pop[:rank_parent], 2)
+            # skip cases where one of the parents is trivial (a number)
+            if isinstance(P1, list) and isinstance(P2, list):
+                C1, C2 = cross_over(P1, P2, Q)
+            else:
+                # if one of the parents is trivial, just compute mutants
+                C1 = mutate_num(P1,Q)
+                C2 = mutate_num(P2,Q)
+            # Compute the costs of the children
+            cost_1 =  abs(target-eval_tree(C1))
+            cost_2 =  abs(target-eval_tree(C2))
+            children.extend([ (cost_1,C1), (cost_2,C2) ])
+             
+        new_pop = pop[rank_elite:]+children 
+        
+        # Mutate some individuals (keep aside the elite for now)
+        # Pick randomly the indices of the mutants
+        mutant_indices = random.sample(range(len(new_pop)), 
+                                       int(mutation_probability*pop_size))      
+        # i: index of a mutant in new_pop
+        for i in mutant_indices:
+            # Choose a mutation by flipping a coin
+            Ti = new_pop[i][1]  #  new_pop[i][0]  is the cost of Ti
+            # Flip a coin to decide whether to mutate an op or a number
+            # If Ti is trivial, we can only use mutate_num
+            if isinstance(Ti, int) or random.choice((False, True)): 
+                Mi = mutate_num(Ti, Q)
+            else:
+                Mi = mutate_op(Ti)
+            # update the mutated entry
+            new_pop[i] = (abs(target-eval_tree(Mi)), Mi)
+                
+        # add without any chance of mutation the elite
+        new_pop.extend(pop[:rank_elite])
+        
+        # sort
+        new_pop.sort(key=lambda x:x[0])
+        
+        # keep only pop_size individuals
+        pop = new_pop[:pop_size]
+        
+        # Report some stats
+        # print(f"\nAfter {g+1} generations, the best individual has a cost of {pop[0][0]}\n")
+        
+        if pop[0][0] == 0:
+            # found a solution!
+            break
+
+    # return best found
+    res = list(pop[0])
+    res.append(g)
+    return tuple(res)
+
+def find_max_pop(Q, target):
+    pops = []
+    for pop_size in range(500, 25000, 500):
+        print(f"Evaluating population size of {pop_size}")
+
+        start_time = time.time()
+        v, T, g = evolve_pop(Q, target, 
+                              max_num_iteration = 200,
+                              population_size = pop_size,
+                              parents_portion = 0.3)
+        end_time = time.time()
+
+        # Break if the evaluation took more than 2 seconds regardless of the result
+        if end_time - start_time > 2:
+            break
+        
+        # Save evaluation if under 2 seconds to grab the last one later
+        pops.append(pop_size)
+
+    print(f"\nMaximum population evaluated in less than 2 seconds: {pops[len(pops)-1]}\n")
+    return pops[len(pops)-1]
+
+def find_max_gens(max_pop):
+    pops_gens = {}
+    for i in range(20):
+        pop_test = random.choice(range(5, max_pop))
+        print(f"Searching for maximum generation using population of {pop_test}")
+
+        v, T, g = evolve_pop(Q, target, 
+                           max_num_iteration = 9999,
+                           population_size = pop_test,
+                           parents_portion = 0.3)
+
+        # Generation is one more than the index iterated
+        g += 1
+
+        print(f"    Maximum generation: {g}")
+
+        pops_gens[pop_test] = g
+    
+    return pops_gens
+
+def evaluate_pops_gens(pops_gens):
+    targets_Qs = {}
+    # Create 30 problems, target and numbers
+    for i in range(30):
+        Q = pick_numbers()
+        Q.sort()
+        target = np.random.randint(1,1000)
+        targets_Qs[target] = Q
+
+    results = []
+    index = 0
+    # Evaluate each combination of population and max generation on all 30 problems
+    for pop, gen in pops_gens.items():
+        print(f"{index+1}. Evaluating max population of {pop} and max generation of {gen}")
+        results.append(0)
+        for target, Q in targets_Qs.items():
+            v, T, g = evolve_pop(Q, target, 
+                       max_num_iteration = gen,
+                       population_size = pop,
+                       parents_portion = 0.3)
+            if v==0:
+                results[index] += 1
+
+        results[index] = (results[index]/30)*100
+        print(f"    Pair success rate: {results[index]}%")
+        index += 1
 
 # Q = pick_numbers()
-# # Test for mutate_num
-# print(T)
-# print(mutate_num(T,Q))
+# target = np.random.randint(1,10000)
 
+# Q = [100, 50, 3, 3, 10, 75]
+# target = 322
+
+# Q = [25,10,2,9,8,7]
+# target = 449
+
+# Q = [50,75,9,10,2,2]
+# target = 533
+
+# Q = [100,25,7,5,3,1]
+# target = 728
+
+Q = [100,25,7,5,3,1]
+target = 728
+
+Q.sort()
+
+print(f"\nUsing target {target}, numbers {Q} and population step size 500 to find max_pop and max_gen\n")
+
+print("-"*10 + "MAX_POP" + "-"*10)
+max_pop = find_max_pop(Q, target)
+
+print("-"*10 + "MAX_GEN" + "-"*10)
+pops_gens = find_max_gens(max_pop)
+
+print("\n" + "-"*10 + "EVALUATE" + "-"*10)
+evaluate_pops_gens(pops_gens)

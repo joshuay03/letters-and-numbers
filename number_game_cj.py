@@ -52,6 +52,8 @@ import copy # for deepcopy
 
 import collections
 
+from numpy.random import rand
+
 
 SMALL_NUMBERS = tuple(range(1,11))
 LARGE_NUMBERS = (25, 50, 75, 100)
@@ -66,7 +68,8 @@ def my_team():
     of triplet of the form (student_number, first_name, last_name)
     
     '''
-    return [ (10404074, 'Joshua', 'Young'), (1234568, 'Grace', 'Hopper') ]
+#    return [ (1234567, 'Ada', 'Lovelace'), (1234568, 'Grace', 'Hopper'), (1234569, 'Eva', 'Tardos') ]
+    raise NotImplementedError()
 
 
 # ----------------------------------------------------------------------------
@@ -214,6 +217,7 @@ def expr_tree_2_polish_str(T):
 # ----------------------------------------------------------------------------
 
 def polish_str_2_expr_tree(pn_str):
+
     '''
     
     Convert a polish notation string of an expression tree
@@ -228,7 +232,7 @@ def polish_str_2_expr_tree(pn_str):
     T
 
     '''
-    
+    #left_p = pn_str.find('[')    
     def find_match(i):
         '''
         Starting at position i where pn_str[i] == '['
@@ -237,63 +241,29 @@ def polish_str_2_expr_tree(pn_str):
         is balanced
         '''
         stack = collections.deque()
-        while i < (len(pn_str)):
-            if pn_str[i] in '[]':
-                if pn_str[i] == '[':
-                    stack.append(pn_str[i])
-                elif pn_str[i] == ']':
+        for x in range(len(i)):
+            if i[x] in '[]':
+                if i[x] == '[':
+                    stack.append(i[x])
+                elif i[x] == ']':
                     if len(stack) == 1:
-                        return i
+                        return x
                     else:
                         stack.pop()
-            i += 1
+    
+    T = []
+    for i in range(len(pn_str)-1):
+        if pn_str[i] == '[':
+            closing = find_match(i)
+            T = list(pn_str[i:closing])
+            print(T)
+    return T
+
 
      # .................................................................  
 
-    T = [pn_str[1], [], []]
-    if pn_str[4] == '[':
-        left_p = 4
-        right_p = find_match(left_p)
-        left_al = polish_str_2_expr_tree(pn_str[left_p:right_p+1])
-        T[1] = left_al
-        if pn_str[right_p+3] == '[':
-            left_p = right_p+3
-            right_p = find_match(left_p)
-            right_al = polish_str_2_expr_tree(pn_str[left_p:right_p+1])
-            T[2] = right_al
-        else:
-            right_al = ''
-            for char in pn_str[right_p+3:]:
-                if char != ',' and char != ']':
-                    right_al += char
-                else:
-                    break
-            T[2] = int(right_al)
-    else:
-        C = 0
-        left_al = ''
-        for char in pn_str[4:]:
-            if char != ',':
-                left_al += char
-                C+=1
-            else:
-                break
-        T[1] = int(left_al)
-        if pn_str[4+C+2] == '[':
-            left_p = 4+C+2
-            right_p = find_match(left_p)
-            right_al = polish_str_2_expr_tree(pn_str[left_p:right_p+1])
-            T[2] = right_al
-        else:
-            right_al = ''
-            for char in pn_str[4+C+2:]:
-                if char != ',' and char != ']':
-                    right_al += char
-                else:
-                    break
-            T[2] = int(right_al)
     
-    return T
+ 
    
 # ----------------------------------------------------------------------------
 
@@ -403,7 +373,7 @@ def decompose(T, prefix = None):
         Aop = []
         Lop = [] 
         Anum = [prefix]
-        Lnum = []
+        Lnum = [T]
         return Aop, Lop, Anum, Lnum
     
     assert isinstance(T, list)
@@ -483,30 +453,40 @@ def mutate_num(T, Q):
     A mutated copy of T
 
     '''
-        
+    
     Aop, Lop, Anum, Lnum = decompose(T)    
     mutant_T = copy.deepcopy(T)
     random_address_num = random.choice(Anum)    #pick a random address in a tree
     counter_Q = collections.Counter(Q) # some small numbers can be repeated
+    #previous method
+    for num in Q:
+        if num in Lnum and num > 10:
+            Q.remove(num)
+
+    if len(Q) == 6:
+        return mutant_T.copy()
+
+    mutant_c = random.choice(Q)
+
+    if len(Q) == 6:  #return non mutated T
+        return T
+    else:      
+        mutant_num = random.choice(Q)
+        if len(random_address_num) != 1:
+            for i in range(len(random_address_num) - 1):
+                mutant_T = mutant_T[random_address_num[i]]
+                if i == len(random_address_num) - 2:
+                    mutant_T[i] = mutant_num
+                    mutant_T = replace_subtree(T, random_address_num[0:len(random_address_num) - 1], mutant_T)
+                    break
+        else:
+            mutant_T[2] = mutant_num
+        return T
+        
+        
 
 
-
-    for number in Lnum:
-        if number in Q:
-            counter_Q.subtract([number])
-            #some small numbers can be repeated
-            if (counter_Q[number] <= 0):
-                counter_Q[number] = 0
-    #when all Q values dont exist in T
-    if (sum(counter_Q.values()) != 0):
-        mutant_num = random.choice(list(counter_Q.keys()))
-        while(counter_Q[mutant_num] == 0):
-            mutant_num = random.choice(list(counter_Q.keys()))
-
-        mutant_T = replace_subtree(mutant_T, random_address_num, mutant_num)
-        return mutant_T
-    else:            
-        return mutant_T
+    
     
 
 # ----------------------------------------------------------------------------
@@ -531,13 +511,14 @@ def mutate_op(T):
     La = op_address_list(T)
     a = random.choice(La)  # random address of an op in T
     op_c = get_item(T, a)       # the char of the op
-
+    
     op_list = ["+", "-", "*"]
     op_list.remove(op_c)
 
     # mutant_c : a different op
     mutant_c = random.choice(op_list)
-
+    print('address',a)
+    print('c',mutant_c)
     mutant_T = copy.deepcopy(T)
     mutant_T = replace_subtree(mutant_T,a,mutant_c)
 
@@ -546,6 +527,7 @@ def mutate_op(T):
 # ----------------------------------------------------------------------------
 
 def cross_over(P1, P2, Q):    
+
     '''
     Perform crossover on two non trivial parents
     
@@ -631,9 +613,8 @@ def cross_over(P1, P2, Q):
     aS1 = Aop_1[i1][:d1] # address of the subtree S1 
     S1 = get_item(C1, aS1)
 
-    d2 = len(Aop_2[i2])-1
-    aS2 = Aop_2[i2][:d2] # address of the subtree S2
-    S2 = get_item(C2, aS2)
+    # ABOUT 3 LINES DELETED
+    raise NotImplementedError()
 
     # print(' DEBUG -------- S1 and S2 ----------') # DEBUG
     # print(S1)
@@ -644,7 +625,7 @@ def cross_over(P1, P2, Q):
     counter_1 = collections.Counter(Lnum_2[a2:b2]+nums_C1mS1)
     
     # Test whether child C1 is ok
-    if all(counter_Q[v]>=counter_1[v] for v in counter_Q):
+    if all(counter_Q[v]>=counter_1[v]  for v in counter_Q):
         # candidate is fine!  :-)
         C1 = replace_subtree(C1, aS1, S2)
     else:
@@ -657,17 +638,35 @@ def cross_over(P1, P2, Q):
         
     # count the numbers (their occurences) in the candidate child C2
     counter_2 = collections.Counter(Lnum_1[a1:b1]+nums_C2mS2)
-
+    
     # Test whether child C2 is ok
-    if all(counter_Q[v]>=counter_2[v] for v in counter_Q):
-        # candidate is fine!  :-)
-        C2 = replace_subtree(C2, aS2, S1)
-    else:
-        available_nums = counter_Q.copy()
-        available_nums.subtract(
-            collections.Counter(nums_C2mS2)
-            )
-        R2, _ = bottom_up_creator(list(available_nums.elements()))
-        C2 = replace_subtree(C2, aS2, R2)
-
+    
+    # ABOUT 10 LINES DELETED
+    raise NotImplementedError()
+    
+    
     return C1, C2
+
+
+T = ['-', ['+', ['-', 75, ['-', 10, 3]], ['-', 100, 50]], 3]
+pn_str = "['-', ['+', ['-', 75, ['-', 10, 3]], ['-', 100, 50]], 3]"
+
+# print(polish_str_2_expr_tree(pn_str))
+
+# Test for num_address_list
+# print(T)
+# print(num_address_list(T))
+
+# Test for mutate_op
+print(T)
+print(mutate_op(T))
+
+# Test for decompose
+# print(T)
+# print(decompose(T))
+
+# Q = pick_numbers()
+# # Test for mutate_num
+# print(T)
+# print(mutate_num(T,Q))
+
