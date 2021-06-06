@@ -517,11 +517,12 @@ def mutate_op(T):
     op_c = get_item(T, a) # the char of the op
 
     op_list = ["+", "-", "*"] # List of possible operators
-    op_list.remove(op_c)
+    op_list.remove(op_c) #remove existing operators
 
     # mutant_c : a different op
     mutant_c = random.choice(op_list)
 
+    #initialize a mutated copy of T
     mutant_T = copy.deepcopy(T)
     mutant_T = replace_subtree(mutant_T,a,mutant_c)
 
@@ -845,9 +846,9 @@ def evaluate_pops_gens(pops_gens):
                        population_size = pop,
                        parents_portion = 0.3)
             if v==0:
+                #target found, increment the success count
                 results[index] += 1
-
-        results[index] = (results[index]/30)*100
+        results[index] = (results[index]/30)*100        #calculate the success rate as a percentage
         print(f"    Pair success rate: {results[index]}%")
         index += 1
 
